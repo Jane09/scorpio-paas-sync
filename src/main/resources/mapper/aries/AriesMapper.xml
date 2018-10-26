@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.newtank.scorpio.paas.dao.aries.AriesDao">
+
+
+    <!-- 添加客户信息 -->
+    <resultMap id="CustomerMap" type="com.newtank.scorpio.paas.domain.AriesCustomer">
+        <result column="id" property="id" />
+        <result column="agent_id" property="agent_id" />
+        <result column="assigned" property="assigned" />
+        <result column="birthday" property="birthday" />
+        <result column="create_at" property="create_at" />
+        <result column="id_location" property="id_location" />
+        <result column="id_number" property="id_number" />
+        <result column="is_deal_made" property="is_deal_made" />
+        <result column="job" property="job" />
+        <result column="last_called_time" property="last_called_time" />
+        <result column="last_deal_made_time" property="last_deal_made_time" />
+        <result column="lead_status" property="lead_status" />
+        <result column="location" property="location" />
+        <result column="mobile" property="mobile" />
+        <result column="mobile_location" property="mobile_location" />
+        <result column="nick_name" property="nick_name" />
+        <result column="org_id" property="org_id" />
+        <result column="real_name" property="real_name" />
+        <result column="recycle_date" property="recycle_date" />
+        <result column="recycle_period" property="recycle_period" />
+        <result column="remark" property="remark" />
+        <result column="sex" property="sex" />
+        <result column="sticky" property="sticky" />
+        <result column="tenant_id" property="tenant_id" />
+        <result column="sale_state" property="sale_state" />
+        <result column="last_recycle_at" property="last_recycle_at" />
+    </resultMap>
+    <insert id="addCustomer" parameterMap="CustomerMap">
+        INSERT INTO t_customer(
+            id,
+            agent_id,
+            assigned,
+            birthday,
+            create_at,
+            id_location,
+            id_number,
+            is_deal_made,
+            job,
+            last_called_time,
+            last_deal_made_time,
+            lead_status,
+            location,
+            mobile,
+            mobile_location,
+            nick_name,
+            org_id,
+            real_name,
+            recycle_date,
+            recycle_period,
+            remark,
+            sex,
+            sticky,
+            tenant_id,
+            sale_state,
+            last_recycle_at
+        )
+        VALUES (
+            #{customer.id},
+            #{customer.agent_id},
+            #{customer.assigned},
+            #{customer.birthday},
+            #{customer.create_at},
+            #{customer.id_location},
+            #{customer.id_number},
+            #{customer.is_deal_made},
+            #{customer.job},
+            #{customer.last_called_time},
+            #{customer.last_deal_made_time},
+            #{customer.lead_status},
+            #{customer.location},
+            #{customer.mobile},
+            #{customer.mobile_location},
+            #{customer.nick_name},
+            #{customer.org_id},
+            #{customer.real_name},
+            #{customer.recycle_date},
+            #{customer.recycle_period},
+            #{customer.remark},
+            #{customer.sex},
+            #{customer.sticky},
+            #{customer.tenant_id},
+            #{customer.sale_state},
+            #{customer.last_recycle_at}
+        )
+    </insert>
+
+
+    <!-- 添加客户线索信息 -->
+    <resultMap id="CustomerLeadMap" type="com.newtank.scorpio.paas.domain.AriesCustomerLead">
+        <result column="id" property="id" />
+        <result column="acquisition_time" property="acquisition_time" />
+        <result column="data_source" property="data_source" />
+        <result column="insurance_test_info" property="insurance_test_info" />
+        <result column="product_name" property="product_name" />
+        <result column="res_id" property="res_id" />
+        <result column="search_keyword" property="search_keyword" />
+        <result column="survey_info" property="survey_info" />
+        <result column="customer_id" property="customer_id" />
+        <result column="batch_id" property="batch_id" />
+        <result column="blocked" property="blocked" />
+        <result column="reason" property="reason" />
+        <result column="blocked_type" property="blocked_type" />
+    </resultMap>
+    <insert id="addCustomerLead" parameterMap="CustomerLeadMap">
+        INSERT INTO t_customer(
+            id,
+            acquisition_time,
+            data_source,
+            insurance_test_info,
+            product_name,
+            res_id,
+            search_keyword,
+            survey_info,
+            customer_id,
+            batch_id,
+            blocked,
+            reason,
+            blocked_type
+        )
+        VALUES (
+            #{lead.id},
+            #{lead.acquisition_time},
+            #{lead.data_source},
+            #{lead.insurance_test_info},
+            #{lead.product_name},
+            #{lead.res_id},
+            #{lead.search_keyword},
+            #{lead.survey_info},
+            #{lead.customer_id},
+            #{lead.batch_id},
+            #{lead.blocked},
+            #{lead.reason},
+            #{lead.blocked_type}
+        )
+    </insert>
+
+
+    <!-- 批次信息 -->
+    <resultMap id="LeadBatchMap" type="com.newtank.scorpio.paas.domain.AriesLeadBatch">
+        <result column="id" property="id" />
+        <result column="create_time" property="create_time" />
+        <result column="name" property="name" />
+        <result column="path" property="path" />
+        <result column="tenant_id" property="tenant_id" />
+        <result column="total" property="total" />
+    </resultMap>
+    <insert id="addLeadBatch" parameterMap="LeadBatchMap">
+        INSERT INTO t_lead_batch(id,create_time,name,path,tenant_id,total)
+        VALUES (#{leadBatch.id},#{leadBatch.create_time},#{leadBatch.name},#{leadBatch.path},#{leadBatch.tenant_id},#{leadBatch.total})
+    </insert>
+</mapper>

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.newtank.scorpio.paas.dao.hxl.HxlDao">
+
+    <!-- 临时待同步用户信息 -->
+    <sql id="temp_cols">
+        res_id,
+        market_project,
+        source,
+        batch,
+        state,
+        name,
+        sex,
+        mobile,
+        phone,
+        area,
+        postcode,
+        last_call_time,
+        call_sum,
+        call_result,
+        result_desc,
+        remark,
+        call_desc,
+        id_number,
+        job,
+        bank,
+        company,
+        bank_acct,
+        address,
+        birthday,
+        age,
+        staff_name,
+        job_no,
+        update_time
+    </sql>
+    <resultMap id="TempMap" type="com.newtank.scorpio.paas.domain.HxlTempCustomer">
+        <result column="res_id" property="res_id" />
+        <result column="market_project" property="market_project" />
+        <result column="source" property="source" />
+        <result column="batch" property="batch" />
+        <result column="state" property="state" />
+        <result column="name" property="name" />
+        <result column="sex" property="sex" />
+        <result column="mobile" property="mobile" />
+        <result column="phone" property="phone" />
+        <result column="area" property="area" />
+        <result column="postcode" property="postcode" />
+        <result column="last_call_time" property="last_call_time" />
+        <result column="call_sum" property="call_sum" />
+        <result column="call_result" property="call_result" />
+        <result column="result_desc" property="result_desc" />
+        <result column="remark" property="remark" />
+        <result column="call_desc" property="call_desc" />
+        <result column="id_number" property="id_number" />
+        <result column="job" property="job" />
+        <result column="bank" property="bank" />
+        <result column="company" property="company" />
+        <result column="bank_acct" property="bank_acct" />
+        <result column="address" property="address" />
+        <result column="birthday" property="birthday" />
+        <result column="age" property="age" />
+        <result column="staff_name" property="staff_name" />
+        <result column="job_no" property="job_no" />
+        <result column="update_time" property="update_time" />
+    </resultMap>
+
+    <select id="findAllTempCustomers" resultMap="TempMap">
+        SELECT
+        <include refid="tmp_cols" />
+        from t_temp_customer
+    </select>
+
+
+
+
+
+
+    <!-- 批次信息 -->
+
+    <resultMap id="HxlLeadInBatchMap" type="com.newtank.scorpio.paas.domain.HxlLeadInBatch">
+        <result column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="seq_no" property="seq_no" />
+        <result column="create_time" property="create_time" />
+        <result column="leads" property="leads" />
+        <result column="path" property="path"/>
+    </resultMap>
+
+    <sql id="hxl_lead_in_batch_cols">
+        b.id,b.name,b.seq_no,b.create_time,b.leads,b.path
+    </sql>
+
+    <!-- 最近一次被分配的批次及tsr记录 -->
+    <select id="findLastAssignBatchByMobile" resultMap="HxlLeadInBatchMap" parameterType="string">
+        SELECT
+        <include refid="hxl_lead_in_batch_cols" />
+        from t_lead_in_batch b
+        INNER JOIN t_lead r on b.id = r.batch_id
+        WHERE r.mobile = #{mobile} ORDER BY r.create_time DESC LIMIT 1
+    </select>
+
+    <select id="findLastAssignBatchByResId" resultMap="HxlLeadInBatchMap" parameterType="string">
+        SELECT
+        <include refid="hxl_lead_in_batch_cols" />
+        from t_lead_in_batch b
+        INNER JOIN t_lead r on b.id = r.batch_id
+        WHERE r.mobile = #{resId} ORDER BY r.create_time DESC LIMIT 1
+    </select>
+
+
+</mapper>
