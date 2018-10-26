@@ -14,9 +14,13 @@ public final class DataUtils {
         return sdf.format(date);
     }
 
-    private static Date parseDate(String dateStr, String pattern) throws ParseException {
+    private static Date parseDate(String dateStr, String pattern) {
         SimpleDateFormat sdf = new SimpleDateFormat(pattern);
-        return sdf.parse(dateStr);
+        try {
+            return sdf.parse(dateStr);
+        } catch (ParseException e) {
+            throw new IllegalArgumentException(dateStr +" 日期字符串非法");
+        }
     }
 
 
@@ -24,7 +28,7 @@ public final class DataUtils {
      * 白羊座批次号
      * @param dateStr 时间字符串
      */
-    public synchronized static String generateSeqNo(String dateStr) throws ParseException {
+    public synchronized static String generateSeqNo(String dateStr) {
         String result = fmtDate(parseDate(dateStr,SEQ_FMT), BATCH_FMT);
         int index = result.lastIndexOf("_");
         String end = result.substring(index+1);
