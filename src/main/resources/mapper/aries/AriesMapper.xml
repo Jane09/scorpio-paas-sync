@@ -142,6 +142,15 @@
     </insert>
 
 
+    <select id="getBatchIdByName" parameterType="string" resultType="string">
+        select id from t_lead_batch where name = #{name} limit 1
+    </select>
+
+    <select id="getBatchIdBySeqNo" parameterType="string" resultType="string">
+        select id from t_lead_batch where id = #{seqNo}
+    </select>
+
+
     <!-- 批次信息 -->
     <resultMap id="LeadBatchMap" type="com.newtank.scorpio.paas.domain.AriesLeadBatch">
         <result column="id" property="id" />

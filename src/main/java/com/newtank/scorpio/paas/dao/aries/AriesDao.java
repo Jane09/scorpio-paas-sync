@@ -18,4 +18,9 @@ public interface AriesDao {
     void addCustomer(@Param("customer") AriesCustomer customer);
 
     void addCustomerLead(@Param("lead")AriesCustomerLead lead);
+
+
+    String getBatchIdByName(String name);
+
+    String getBatchIdBySeqNo(String seqNo);
 }
