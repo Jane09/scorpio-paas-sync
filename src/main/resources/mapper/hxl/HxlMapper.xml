@@ -71,7 +71,9 @@
     </select>
 
 
-
+    <select id="findMobileByResId" parameterType="string" resultType="string">
+        select mobile from t_lead where res_id = #{resId} limit 1s
+    </select>
 
 
 

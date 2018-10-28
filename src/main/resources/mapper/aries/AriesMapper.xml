@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.newtank.scorpio.paas.dao.aries.AriesDao">
 
-
+    <parameterMap id="AriesUpdateCustomer" type="com.newtank.scorpio.paas.domain.AriesCustomerUpdate"/>
     <!-- 添加客户信息 -->
     <resultMap id="CustomerMap" type="com.newtank.scorpio.paas.domain.AriesCustomer">
         <result column="id" property="id" />
@@ -32,9 +32,8 @@
         <result column="sale_state" property="sale_state" />
         <result column="last_recycle_at" property="last_recycle_at" />
     </resultMap>
-    <insert id="addCustomer" parameterMap="CustomerMap">
-        INSERT INTO t_customer(
-            id,
+    <sql id="customerSql">
+        id,
             agent_id,
             assigned,
             birthday,
@@ -60,6 +59,10 @@
             tenant_id,
             sale_state,
             last_recycle_at
+    </sql>
+    <insert id="addCustomer" parameterMap="CustomerMap">
+        INSERT INTO t_customer(
+            <include refid="customerSql"/>
         )
         VALUES (
             #{customer.id},
@@ -91,8 +94,42 @@
         )
     </insert>
 
+    <update id="updateCustomer" parameterType="AriesUpdateCustomer">
+
+    </update>
+
+    <select id="findByTenantIdAndMobile" resultMap="CustomerMap">
+        select <include refid="CustomerMap"/> from t_customer
+        where tenant_id = #{tenantId} and mobile = #{mobile}
+        limit 1
+    </select>
+
+    <select id="findByTenantIdAndResId" resultMap="CustomerMap">
+        select <include refid="CustomerMap"/> from t_customer
+        inner join t_customer_lead_info info on id = info.customer_id
+        where tenant_id =#{tenantId} AND info.res_id = #{resId}
+        limit 1
+    </select>
+
+
+
 
     <!-- 添加客户线索信息 -->
+    <sql id="leadSql">
+        id,
+        acquisition_time,
+        data_source,
+        insurance_test_info,
+        product_name,
+        res_id,
+        search_keyword,
+        survey_info,
+        customer_id,
+        batch_id,
+        blocked,
+        reason,
+        blocked_type
+    </sql>
     <resultMap id="CustomerLeadMap" type="com.newtank.scorpio.paas.domain.AriesCustomerLead">
         <result column="id" property="id" />
         <result column="acquisition_time" property="acquisition_time" />
@@ -110,19 +147,7 @@
     </resultMap>
     <insert id="addCustomerLead" parameterMap="CustomerLeadMap">
         INSERT INTO t_customer(
-            id,
-            acquisition_time,
-            data_source,
-            insurance_test_info,
-            product_name,
-            res_id,
-            search_keyword,
-            survey_info,
-            customer_id,
-            batch_id,
-            blocked,
-            reason,
-            blocked_type
+            <include refid="leadSql"/>
         )
         VALUES (
             #{lead.id},
@@ -140,6 +165,10 @@
             #{lead.blocked_type}
         )
     </insert>
+
+    <select id="findByCustomerId" parameterType="string" resultType="">
+        select <include refid="leadSql"/> from t_customer_lead_info where customer_id = #{customerId}
+    </select>
 
 
     <select id="getBatchIdByName" parameterType="string" resultType="string">
