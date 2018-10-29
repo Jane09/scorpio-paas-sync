@@ -94,9 +94,12 @@
         )
     </insert>
 
-    <update id="updateCustomer" parameterMap="AriesUpdateCustomer">
-
+    <update id="updateCustomer" parameterType="com.newtank.scorpio.paas.domain.AriesCustomerUpdate">
+        update t_customer set birthday = #{customer.birthday},id_number = #{customer.id_number},real_name = #{customer.real_name}
+        where id = #{customer.id}
     </update>
+
+
 
 
     <select id="findByJobNo" parameterType="string" resultType="com.newtank.scorpio.paas.domain.AriesAgent">
@@ -170,6 +173,15 @@
             #{lead.blocked_type}
         )
     </insert>
+
+    <update id="updateCustomerLead" parameterType="com.newtank.scorpio.paas.domain.AriesCustomerLead">
+        update t_customer_lead_info
+        set
+            reason = #{lead.reason},
+            blocked_type = #{lead.blocked_type},
+            batch_id = #{lead.batch_id}
+        where id = #{lead.id}
+    </update>
 
     <select id="findByCustomerId" parameterType="string" resultMap="CustomerLeadMap">
         select <include refid="leadSql"/> from t_customer_lead_info where customer_id = #{customerId}
