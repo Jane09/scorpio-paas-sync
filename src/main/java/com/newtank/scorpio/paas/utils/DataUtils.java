@@ -1,10 +1,13 @@
 package com.newtank.scorpio.paas.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
+@Slf4j
 public final class DataUtils {
 
     private static final String BATCH_FMT = "yyyyMMdd_HHmmss_S";
@@ -23,6 +26,7 @@ public final class DataUtils {
         try {
             return sdf.parse(dateStr);
         } catch (ParseException e) {
+            log.error("Illegal Character: {}", dateStr);
             throw new IllegalArgumentException(dateStr +" 日期字符串非法");
         }
     }

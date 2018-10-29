@@ -9,6 +9,8 @@ import java.util.Date;
 @Setter
 public class AriesCustomerUpdate {
 
+    private String id;
+
     private String real_name;
 
     private Date birthday;

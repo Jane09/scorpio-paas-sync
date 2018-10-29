@@ -60,7 +60,7 @@
             sale_state,
             last_recycle_at
     </sql>
-    <insert id="addCustomer" parameterMap="CustomerMap">
+    <insert id="addCustomer" parameterType="com.newtank.scorpio.paas.domain.AriesCustomer">
         INSERT INTO t_customer(
             <include refid="customerSql"/>
         )
@@ -94,18 +94,23 @@
         )
     </insert>
 
-    <update id="updateCustomer" parameterType="AriesUpdateCustomer">
+    <update id="updateCustomer" parameterMap="AriesUpdateCustomer">
 
     </update>
 
+
+    <select id="findByJobNo" parameterType="string" resultType="com.newtank.scorpio.paas.domain.AriesAgent">
+        select id agentId, org_id orgId from t_agent where job_no = #{jobNo}
+    </select>
+
     <select id="findByTenantIdAndMobile" resultMap="CustomerMap">
-        select <include refid="CustomerMap"/> from t_customer
+        select <include refid="customerSql"/> from t_customer
         where tenant_id = #{tenantId} and mobile = #{mobile}
         limit 1
     </select>
 
     <select id="findByTenantIdAndResId" resultMap="CustomerMap">
-        select <include refid="CustomerMap"/> from t_customer
+        select <include refid="customerSql"/> from t_customer
         inner join t_customer_lead_info info on id = info.customer_id
         where tenant_id =#{tenantId} AND info.res_id = #{resId}
         limit 1
@@ -145,7 +150,7 @@
         <result column="reason" property="reason" />
         <result column="blocked_type" property="blocked_type" />
     </resultMap>
-    <insert id="addCustomerLead" parameterMap="CustomerLeadMap">
+    <insert id="addCustomerLead" parameterType="com.newtank.scorpio.paas.domain.AriesCustomerLead">
         INSERT INTO t_customer(
             <include refid="leadSql"/>
         )
@@ -166,7 +171,7 @@
         )
     </insert>
 
-    <select id="findByCustomerId" parameterType="string" resultType="">
+    <select id="findByCustomerId" parameterType="string" resultMap="CustomerLeadMap">
         select <include refid="leadSql"/> from t_customer_lead_info where customer_id = #{customerId}
     </select>
 
@@ -189,8 +194,15 @@
         <result column="tenant_id" property="tenant_id" />
         <result column="total" property="total" />
     </resultMap>
-    <insert id="addLeadBatch" parameterMap="LeadBatchMap">
+    <insert id="addLeadBatch" parameterType="com.newtank.scorpio.paas.domain.AriesLeadBatch">
         INSERT INTO t_lead_batch(id,create_time,name,path,tenant_id,total)
         VALUES (#{leadBatch.id},#{leadBatch.create_time},#{leadBatch.name},#{leadBatch.path},#{leadBatch.tenant_id},#{leadBatch.total})
     </insert>
+
+    <select id="findBatchById" parameterType="string" resultMap="LeadBatchMap">
+        select id,create_time,name,path,tenant_id,total from t_lead_batch where id = #{id}
+    </select>
+    <select id="findBatchByName" parameterType="string" resultMap="LeadBatchMap">
+        select id,create_time,name,path,tenant_id,total from t_lead_batch where name = #{name}
+    </select>
 </mapper>

@@ -11,6 +11,11 @@ public interface AriesDao {
 
     List<AriesCustomer> findAll();
 
+    AriesLeadBatch findBatchById(String id);
+
+    AriesLeadBatch findBatchByName(String name);
+
+
     void addLeadBatch(@Param("leadBatch") AriesLeadBatch leadBatch);
 
     void addCustomer(@Param("customer") AriesCustomer customer);

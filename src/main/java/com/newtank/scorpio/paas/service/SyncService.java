@@ -1,5 +1,6 @@
 package com.newtank.scorpio.paas.service;
 
+import com.alibaba.fastjson.JSON;
 import com.newtank.scorpio.paas.dao.aries.AriesDao;
 import com.newtank.scorpio.paas.dao.hxl.HxlDao;
 import com.newtank.scorpio.paas.domain.*;
@@ -34,14 +35,14 @@ public class SyncService {
      * logically
      *
      */
-    public void syncDataFromHxlToAries(Long tenantId) {
-        Map<AriesLeadBatch,List<AriesCustomer>> waitSync = new HashMap<>();
+    public void syncDataFromHxlToAries(final Long tenantId) {
         Map<String,AriesLeadBatch> waitBatches = new HashMap<>();
         //待同步的客户信息
         List<HxlTempCustomer> customers = hxlDao.findAllTempCustomers();
         if(customers != null) {
             customers.forEach(customer -> {
-
+                log.info("Customer: {}", JSON.toJSONString(customer));
+                boolean skip = false;
                 String resId = customer.getRes_id();
                 String mobile = customer.getMobile();
                 HxlLeadInBatch batch;
@@ -54,67 +55,95 @@ public class SyncService {
                 }
                 if(batch == null) {
                     log.error(mobile +" 没有对应的批次数据!");
+                    skip = true;
                 }
                 if(StringUtils.isEmpty(mobile) || mobile.contains(HIDDEN)) {
                     log.error(mobile +" 没有对应的数据");
+                    skip = true;
                 }
-                AriesAgent ariesAgent = ariesDao.findByJobNo(customer.getJob_no());
-                Date now = new Date();
-                if(batch != null && !StringUtils.isEmpty(mobile) && !mobile.contains(HIDDEN)) {
-                    AriesLeadBatch wait = transferBatchNo(batch, waitBatches);
-                    if(wait != null) {//有批次信息
-                        //校验白羊座的数据是否存在
-                        AriesCustomer ariesCustomer = ariesDao.findByTenantIdAndMobile(tenantId,mobile);
-                        if(ariesCustomer != null){
-                            //更新基础信息 和线索信息（黑名单）
-                            AriesCustomerUpdate update = new AriesCustomerUpdate();
-                            ariesDao.updateCustomer(update);
-                            AriesCustomerLead custLead = ariesDao.findByCustomerId(ariesCustomer.getId());
-                            if(custLead != null){
-                                checkBlocked(custLead,tenantId,mobile);
-                                //更新
-                                ariesDao.updateCustomerLead(custLead);
-                            }else {
-                                custLead = new AriesCustomerLead();
+                if(!skip) {
+                    AriesAgent ariesAgent = ariesDao.findByJobNo(customer.getJob_no());
+                    if(ariesAgent == null){
+                        log.error("工号：{} 对应的坐席不存在", customer.getJob_no());
+                    }else {
+                        Date now = new Date();
+                        if(batch != null && !StringUtils.isEmpty(mobile) && !mobile.contains(HIDDEN)) {
+                            AriesLeadBatch wait = transferBatchNo(batch, waitBatches);
+                            if(wait != null) {//有批次信息
+                                //更新批次信息
+                                AriesLeadBatch old = ariesDao.findBatchById(wait.getId());
+                                if(old == null) {
+                                    old = ariesDao.findBatchByName(wait.getName());
+                                }
+                                if(old == null){
+                                    log.info("添加批次数据： {}", JSON.toJSONString(wait));
+                                    ariesDao.addLeadBatch(wait);
+                                }
+                                //校验白羊座的数据是否存在
+                                AriesCustomer ariesCustomer = ariesDao.findByTenantIdAndMobile(tenantId,mobile);
+                                if(ariesCustomer != null){
+                                    //TODO 同步数据只新增不更新
+                                    //更新基础信息 和线索信息（黑名单）
+//                            AriesCustomerUpdate update = new AriesCustomerUpdate();
+//                            update.setId(ariesCustomer.getId());
+//                            update.setReal_name(customer.getName());
+//                            update.setBirthday(getBirth(customer.getBirthday()));
+//                            update.setId_number(customer.getId_number());
+//                            ariesDao.updateCustomer(update);
+//                            AriesCustomerLead custLead = ariesDao.findByCustomerId(ariesCustomer.getId());
+//                            if(custLead != null){
+//                                checkBlocked(custLead,tenantId,mobile);
+//                                //更新
+//                                ariesDao.updateCustomerLead(custLead);
+//                            }else {
+//                                custLead = new AriesCustomerLead();
+//                                custLead.setId(DataUtils.generatePk());
+//                                custLead.setAcquisition_time(now);
+//                                custLead.setBatch_id(wait.getId());
+//                                checkBlocked(custLead,tenantId,mobile);
+//                                custLead.setCustomer_id(ariesCustomer.getId());
+//                                custLead.setData_source(customer.getSource());
+//                                custLead.setProduct_name(customer.getMarket_project());
+//                                custLead.setRes_id(customer.getRes_id());
+//                                checkBlocked(custLead,tenantId,mobile);
+//                                ariesDao.addCustomerLead(custLead);
+//                            }
+                                }else {
+                                    //新增客户信息和 线索信息（黑名单）
+                                    ariesCustomer = new AriesCustomer();
+                                    ariesCustomer.setId(DataUtils.generatePk());
+                                    ariesCustomer.setAgent_id(ariesAgent.getAgentId());
+                                    ariesCustomer.setOrg_id(ariesAgent.getOrgId());
+                                    ariesCustomer.setAssigned(true);
+                                    ariesCustomer.setBirthday(getBirth(customer.getBirthday()));
+                                    ariesCustomer.setCreate_at(now);
+                                    ariesCustomer.setId_number(customer.getId_number());
+                                    ariesCustomer.setJob(customer.getJob());
+                                    ariesCustomer.setLast_called_time(getTime(customer.getLast_call_time()));
+                                    ariesCustomer.setLead_status("MB");
+                                    ariesCustomer.setMobile(customer.getMobile());
+                                    ariesCustomer.setNick_name(customer.getName());
+                                    ariesCustomer.setReal_name(customer.getName());
+                                    ariesCustomer.setRemark(customer.getRemark());
+                                    ariesCustomer.setSex(checkSex(customer.getSex()));
+                                    ariesCustomer.setSticky(false);
+                                    ariesCustomer.setTenant_id(tenantId);
+                                    ariesDao.addCustomer(ariesCustomer);
 
 
-                                checkBlocked(custLead,tenantId,mobile);
-                                ariesDao.addCustomerLead(custLead);
+                                    AriesCustomerLead custLead = new AriesCustomerLead();
+                                    custLead.setId(DataUtils.generatePk());
+                                    custLead.setAcquisition_time(now);
+                                    custLead.setBatch_id(wait.getId());
+                                    checkBlocked(custLead,tenantId,mobile);
+                                    custLead.setCustomer_id(ariesCustomer.getId());
+                                    custLead.setData_source(customer.getSource());
+                                    custLead.setProduct_name(customer.getMarket_project());
+                                    custLead.setRes_id(customer.getRes_id());
+
+                                    ariesDao.addCustomerLead(custLead);
+                                }
                             }
-                        }else {
-                            //新增客户信息和 线索信息（黑名单）
-                            ariesCustomer = new AriesCustomer();
-                            ariesCustomer.setId(DataUtils.generatePk());
-                            ariesCustomer.setAgent_id(ariesAgent.getAgentId());
-                            ariesCustomer.setOrg_id(ariesAgent.getOrgId());
-                            ariesCustomer.setAssigned(true);
-                            ariesCustomer.setBirthday(getBirth(customer.getBirthday()));
-                            ariesCustomer.setCreate_at(now);
-                            ariesCustomer.setId_number(customer.getId_number());
-                            ariesCustomer.setJob(customer.getJob());
-                            ariesCustomer.setLast_called_time(getTime(customer.getLast_call_time()));
-                            ariesCustomer.setLead_status("MB");
-                            ariesCustomer.setMobile(customer.getMobile());
-                            ariesCustomer.setNick_name(customer.getName());
-                            ariesCustomer.setReal_name(customer.getName());
-                            ariesCustomer.setRemark(customer.getRemark());
-                            ariesCustomer.setSex(checkSex(customer.getSex()));
-                            ariesCustomer.setSticky(false);
-                            ariesCustomer.setTenant_id(tenantId);
-                            ariesDao.addCustomer(ariesCustomer);
-
-
-                            AriesCustomerLead custLead = new AriesCustomerLead();
-                            custLead.setId(DataUtils.generatePk());
-                            custLead.setAcquisition_time(now);
-                            custLead.setBatch_id(wait.getId());
-                            checkBlocked(custLead,tenantId,mobile);
-                            custLead.setCustomer_id(ariesCustomer.getId());
-                            custLead.setData_source(customer.getSource());
-                            custLead.setProduct_name(customer.getMarket_project());
-                            custLead.setRes_id(customer.getRes_id());
-
-                            ariesDao.addCustomerLead(custLead);
                         }
                     }
                 }
@@ -146,14 +175,14 @@ public class SyncService {
     private AriesLeadBatch transferBatchNo(HxlLeadInBatch batch,  Map<String,AriesLeadBatch> waitBatches) {
         String seqNo = batch.getSeq_no();
         String name = batch.getName();
-        String batchId = ariesDao.getBatchIdByName(name);
-        if(!StringUtils.isEmpty(batch)) {
-            return null;
-        }
-        batchId = ariesDao.getBatchIdBySeqNo(seqNo);
-        if(!StringUtils.isEmpty(batch)) {
-            return null;
-        }
+//        String batchId = ariesDao.getBatchIdByName(name);
+//        if(!StringUtils.isEmpty(batch)) {
+//            return null;
+//        }
+//        batchId = ariesDao.getBatchIdBySeqNo(seqNo);
+//        if(!StringUtils.isEmpty(batch)) {
+//            return null;
+//        }
         String batchNo = DataUtils.generateSeqNo(seqNo);
         AriesLeadBatch waitBatch = new AriesLeadBatch();
         waitBatch.setId(batchNo);
@@ -176,8 +205,21 @@ public class SyncService {
         if(StringUtils.isEmpty(birth)){
             return null;
         }
-        birth = birth.replaceAll("/","").replaceAll("-","");
-        return DataUtils.parseDate(DataUtils.SHORT_DATE, birth);
+        if(birth.contains("/")){
+            String[] bs = birth.split("/");
+            birth = bs[0]+fmt24(bs[1])+fmt24(bs[2]);
+        }else if(birth.contains("-")){
+            String[] bs = birth.split("-");
+            birth = bs[0]+fmt24(bs[1])+fmt24(bs[2]);
+        }
+        return DataUtils.parseDate(birth,DataUtils.SHORT_DATE);
+    }
+
+    private String fmt24(String str) {
+        if(str.length() == 1){
+            return "0"+str;
+        }
+        return str;
     }
 
     /**
@@ -190,7 +232,7 @@ public class SyncService {
             return null;
         }
         str = str.replaceAll("/","").replaceAll("-","");
-        return DataUtils.parseDate(DataUtils.SLASH_TIME, str);
+        return DataUtils.parseDate(str,DataUtils.SLASH_TIME);
     }
 
     private String checkSex(String sex) {
