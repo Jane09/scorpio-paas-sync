@@ -8,6 +8,7 @@ import com.newtank.scorpio.paas.utils.DataUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -25,6 +26,9 @@ public class SyncService {
     private final AriesDao ariesDao;
     private final HxlDao hxlDao;
 
+    @Value("${switch.update}")
+    private Boolean update;
+
     @Autowired
     public SyncService(AriesDao ariesDao, HxlDao hxlDao) {
         this.ariesDao = ariesDao;
@@ -41,7 +45,7 @@ public class SyncService {
         List<HxlTempCustomer> customers = hxlDao.findAllTempCustomers();
         if(customers != null) {
             customers.forEach(customer -> {
-                log.info("Customer: {}", JSON.toJSONString(customer));
+//                log.info("Customer: {}", JSON.toJSONString(customer));
                 boolean skip = false;
                 String resId = customer.getRes_id();
                 String mobile = customer.getMobile();
@@ -82,32 +86,36 @@ public class SyncService {
                                 //校验白羊座的数据是否存在
                                 AriesCustomer ariesCustomer = ariesDao.findByTenantIdAndMobile(tenantId,mobile);
                                 if(ariesCustomer != null){
-                                    //TODO only sync data which does not exists.
-                                    log.info("电话： {} 对应的客户已经存在，更新数据",mobile);
-                                    AriesCustomerUpdate update = new AriesCustomerUpdate();
-                                    update.setId(ariesCustomer.getId());
-                                    update.setReal_name(customer.getName());
-                                    update.setBirthday(getBirth(customer.getBirthday()));
-                                    update.setId_number(customer.getId_number());
-                                    ariesDao.updateCustomer(update);
+                                    //only sync data which does not exists.
+                                    if(update) {
+                                        log.info("电话： {} 对应的客户已经存在，更新数据",mobile);
+                                        AriesCustomerUpdate update = new AriesCustomerUpdate();
+                                        update.setId(ariesCustomer.getId());
+                                        update.setReal_name(customer.getName());
+                                        update.setBirthday(getBirth(customer.getBirthday()));
+                                        update.setId_number(customer.getId_number());
+                                        ariesDao.updateCustomer(update);
 
-                                    //更新线索表
-                                    AriesCustomerLead custLead = ariesDao.findByCustomerId(ariesCustomer.getId());
-                                    if(custLead != null){
-                                        checkBlocked(custLead,tenantId,mobile);
-                                        custLead.setBatch_id(wait.getId());
-                                        ariesDao.updateCustomerLead(custLead);
-                                    }else {
-                                        custLead = new AriesCustomerLead();
-                                        custLead.setId(DataUtils.generatePk());
-                                        custLead.setAcquisition_time(now);
-                                        custLead.setBatch_id(wait.getId());
-                                        checkBlocked(custLead,tenantId,mobile);
-                                        custLead.setCustomer_id(ariesCustomer.getId());
-                                        custLead.setData_source(customer.getSource());
+                                        //更新线索表
+                                        AriesCustomerLead custLead = ariesDao.findByCustomerId(ariesCustomer.getId());
+                                        if(custLead != null){
+                                            checkBlocked(custLead,tenantId,mobile);
+                                            custLead.setBatch_id(wait.getId());
+                                            ariesDao.updateCustomerLead(custLead);
+                                        }else {
+                                            custLead = new AriesCustomerLead();
+                                            custLead.setId(DataUtils.generatePk());
+                                            custLead.setAcquisition_time(now);
+                                            custLead.setBatch_id(wait.getId());
+                                            checkBlocked(custLead,tenantId,mobile);
+                                            custLead.setCustomer_id(ariesCustomer.getId());
+                                            custLead.setData_source(customer.getSource());
 //                                        custLead.setProduct_name(customer.getMarket_project());
-                                        custLead.setRes_id(customer.getRes_id());
-                                        ariesDao.addCustomerLead(custLead);
+                                            custLead.setRes_id(customer.getRes_id());
+                                            ariesDao.addCustomerLead(custLead);
+                                        }
+                                    }else {
+                                        log.info("电话： {} 对应的客户已经存在，跳过",mobile);
                                     }
                                 }else {
                                     log.info("新增用户：{}",mobile);

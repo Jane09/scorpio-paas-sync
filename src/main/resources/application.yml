@@ -1,6 +1,8 @@
 spring:
   application:
     name: scorpio-paas-sync
+switch:
+  update: false
 aries:
   datasource:
     url: jdbc:mysql://localhost:3306/scorpio-paas-hxl?useSSL=false&useUnicode=true&characterEncoding=utf8
