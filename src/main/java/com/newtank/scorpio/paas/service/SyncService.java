@@ -54,15 +54,15 @@ public class SyncService {
                     batch = hxlDao.findLastAssignBatchByResId(resId);
                     //查询明文电话
                     mobile = hxlDao.findMobileByResId(resId);
+                    if(StringUtils.isEmpty(mobile)) {
+                        log.info("ResId：{} 找不到对应的线索信息",resId);
+                        skip = true;
+                    }
                 }else {
                     batch = hxlDao.findLastAssignBatchByMobile(mobile);
                 }
-                if(batch == null) {
+                if(!skip && batch == null) {
                     log.error(resId +" 没有对应的批次数据!");
-                    skip = true;
-                }
-                if(StringUtils.isEmpty(mobile) || mobile.contains(HIDDEN)) {
-                    log.error(mobile +" 没有对应的数据");
                     skip = true;
                 }
                 if(!skip) {
