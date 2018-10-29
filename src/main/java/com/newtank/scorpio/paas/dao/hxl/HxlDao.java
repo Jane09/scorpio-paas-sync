@@ -16,6 +16,5 @@ public interface HxlDao {
 
     HxlLeadInBatch findLastAssignBatchByResId(@Param("resId") String resId);
 
-
     String findMobileByResId(String resId);
 }

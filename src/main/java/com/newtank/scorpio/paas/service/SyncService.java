@@ -67,7 +67,7 @@ public class SyncService {
                         log.error("工号：{} 对应的坐席不存在", customer.getJob_no());
                     }else {
                         Date now = new Date();
-                        if(batch != null && !StringUtils.isEmpty(mobile) && !mobile.contains(HIDDEN)) {
+                        if(!StringUtils.isEmpty(mobile) && !mobile.contains(HIDDEN)) {
                             AriesLeadBatch wait = transferBatchNo(batch, waitBatches);
                             if(wait != null) {//有批次信息
                                 //更新批次信息
@@ -177,14 +177,6 @@ public class SyncService {
     private AriesLeadBatch transferBatchNo(HxlLeadInBatch batch,  Map<String,AriesLeadBatch> waitBatches) {
         String seqNo = batch.getSeq_no();
         String name = batch.getName();
-//        String batchId = ariesDao.getBatchIdByName(name);
-//        if(!StringUtils.isEmpty(batch)) {
-//            return null;
-//        }
-//        batchId = ariesDao.getBatchIdBySeqNo(seqNo);
-//        if(!StringUtils.isEmpty(batch)) {
-//            return null;
-//        }
         String batchNo = DataUtils.generateSeqNo(seqNo);
         AriesLeadBatch waitBatch = new AriesLeadBatch();
         waitBatch.setId(batchNo);
@@ -198,11 +190,6 @@ public class SyncService {
     }
 
 
-    /**
-     * yyyy-MM-dd
-     * @param birth
-     * @return
-     */
     private Date getBirth(String birth) {
         if(StringUtils.isEmpty(birth)){
             return null;
@@ -224,11 +211,6 @@ public class SyncService {
         return str;
     }
 
-    /**
-     * yyyy/MM/dd HH:mm:ss
-     * @param str
-     * @return
-     */
     private Date getTime(String str) {
         if(StringUtils.isEmpty(str)){
             return null;

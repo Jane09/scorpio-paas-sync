@@ -9,12 +9,9 @@ import java.util.List;
 @Mapper
 public interface AriesDao {
 
-    List<AriesCustomer> findAll();
-
     AriesLeadBatch findBatchById(String id);
 
     AriesLeadBatch findBatchByName(String name);
-
 
     void addLeadBatch(@Param("leadBatch") AriesLeadBatch leadBatch);
 
@@ -31,14 +28,7 @@ public interface AriesDao {
 
     AriesAgent findByJobNo(String jobNo);
 
-
-    String getBatchIdByName(String name);
-
-    String getBatchIdBySeqNo(String seqNo);
-
     AriesCustomer findByTenantIdAndMobile(@Param("tenantId") Long tenantId, @Param("mobile") String mobile);
-
-    AriesCustomer findByTenantIdAndResId(@Param("tenantId") Long tenantId, @Param("resId") String resId);
 
 
     Blacklist findBlacklistByTenantIdAndMobile(@Param("tenantId") Long tenantId, @Param("mobile") String mobile);
