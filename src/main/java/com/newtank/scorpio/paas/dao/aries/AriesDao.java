@@ -41,5 +41,5 @@ public interface AriesDao {
     AriesCustomer findByTenantIdAndResId(@Param("tenantId") Long tenantId, @Param("resId") String resId);
 
 
-    Blacklist findBlacklistByTenantIdAndMobile(Long tenantId, String mobile);
+    Blacklist findBlacklistByTenantIdAndMobile(@Param("tenantId") Long tenantId, @Param("mobile") String mobile);
 }

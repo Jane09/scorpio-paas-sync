@@ -33,7 +33,7 @@
         <result column="last_recycle_at" property="last_recycle_at" />
     </resultMap>
     <sql id="customerSql">
-        id,
+            id,
             agent_id,
             assigned,
             birthday,
@@ -151,7 +151,7 @@
         <result column="blocked_type" property="blocked_type" />
     </resultMap>
     <insert id="addCustomerLead" parameterType="com.newtank.scorpio.paas.domain.AriesCustomerLead">
-        INSERT INTO t_customer(
+        INSERT INTO t_customer_lead_info(
             <include refid="leadSql"/>
         )
         VALUES (
@@ -204,5 +204,16 @@
     </select>
     <select id="findBatchByName" parameterType="string" resultMap="LeadBatchMap">
         select id,create_time,name,path,tenant_id,total from t_lead_batch where name = #{name}
+    </select>
+
+
+    <select id="findBlacklistByTenantIdAndMobile" resultType="com.newtank.scorpio.paas.domain.Blacklist">
+        select
+            type,
+            remark,
+            call_state,
+            universal
+        from t_customer_blacklist
+        where universal = true or (tenant_id = #{tenantId} and mobile = #{mobile}) limit 1
     </select>
 </mapper>

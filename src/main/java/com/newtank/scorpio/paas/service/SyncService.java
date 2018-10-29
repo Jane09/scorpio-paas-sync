@@ -82,32 +82,31 @@ public class SyncService {
                                 //校验白羊座的数据是否存在
                                 AriesCustomer ariesCustomer = ariesDao.findByTenantIdAndMobile(tenantId,mobile);
                                 if(ariesCustomer != null){
-                                    //TODO 同步数据只新增不更新
-                                    //更新基础信息 和线索信息（黑名单）
-//                            AriesCustomerUpdate update = new AriesCustomerUpdate();
-//                            update.setId(ariesCustomer.getId());
-//                            update.setReal_name(customer.getName());
-//                            update.setBirthday(getBirth(customer.getBirthday()));
-//                            update.setId_number(customer.getId_number());
-//                            ariesDao.updateCustomer(update);
-//                            AriesCustomerLead custLead = ariesDao.findByCustomerId(ariesCustomer.getId());
-//                            if(custLead != null){
-//                                checkBlocked(custLead,tenantId,mobile);
-//                                //更新
-//                                ariesDao.updateCustomerLead(custLead);
-//                            }else {
-//                                custLead = new AriesCustomerLead();
-//                                custLead.setId(DataUtils.generatePk());
-//                                custLead.setAcquisition_time(now);
-//                                custLead.setBatch_id(wait.getId());
-//                                checkBlocked(custLead,tenantId,mobile);
-//                                custLead.setCustomer_id(ariesCustomer.getId());
-//                                custLead.setData_source(customer.getSource());
-//                                custLead.setProduct_name(customer.getMarket_project());
-//                                custLead.setRes_id(customer.getRes_id());
-//                                checkBlocked(custLead,tenantId,mobile);
-//                                ariesDao.addCustomerLead(custLead);
-//                            }
+                                    log.info("电话： {} 对应的客户已经存在",mobile);
+//                                    AriesCustomerUpdate update = new AriesCustomerUpdate();
+//                                    update.setId(ariesCustomer.getId());
+//                                    update.setReal_name(customer.getName());
+//                                    update.setBirthday(getBirth(customer.getBirthday()));
+//                                    update.setId_number(customer.getId_number());
+//                                    ariesDao.updateCustomer(update);
+//                                    AriesCustomerLead custLead = ariesDao.findByCustomerId(ariesCustomer.getId());
+//                                    if(custLead != null){
+//                                        checkBlocked(custLead,tenantId,mobile);
+//                                        //更新
+//                                        ariesDao.updateCustomerLead(custLead);
+//                                    }else {
+//                                        custLead = new AriesCustomerLead();
+//                                        custLead.setId(DataUtils.generatePk());
+//                                        custLead.setAcquisition_time(now);
+//                                        custLead.setBatch_id(wait.getId());
+//                                        checkBlocked(custLead,tenantId,mobile);
+//                                        custLead.setCustomer_id(ariesCustomer.getId());
+//                                        custLead.setData_source(customer.getSource());
+//                                        custLead.setProduct_name(customer.getMarket_project());
+//                                        custLead.setRes_id(customer.getRes_id());
+//                                        checkBlocked(custLead,tenantId,mobile);
+//                                        ariesDao.addCustomerLead(custLead);
+//                                    }
                                 }else {
                                     //新增客户信息和 线索信息（黑名单）
                                     ariesCustomer = new AriesCustomer();
@@ -121,13 +120,14 @@ public class SyncService {
                                     ariesCustomer.setJob(customer.getJob());
                                     ariesCustomer.setLast_called_time(getTime(customer.getLast_call_time()));
                                     ariesCustomer.setLead_status("MB");
-                                    ariesCustomer.setMobile(customer.getMobile());
+                                    ariesCustomer.setMobile(mobile);
                                     ariesCustomer.setNick_name(customer.getName());
                                     ariesCustomer.setReal_name(customer.getName());
                                     ariesCustomer.setRemark(customer.getRemark());
                                     ariesCustomer.setSex(checkSex(customer.getSex()));
                                     ariesCustomer.setSticky(false);
                                     ariesCustomer.setTenant_id(tenantId);
+                                    ariesCustomer.setIs_deal_made(false);
                                     ariesDao.addCustomer(ariesCustomer);
 
 
