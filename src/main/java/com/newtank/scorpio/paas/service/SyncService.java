@@ -58,7 +58,7 @@ public class SyncService {
                     batch = hxlDao.findLastAssignBatchByMobile(mobile);
                 }
                 if(batch == null) {
-                    log.error(mobile +" 没有对应的批次数据!");
+                    log.error(resId +" 没有对应的批次数据!");
                     skip = true;
                 }
                 if(StringUtils.isEmpty(mobile) || mobile.contains(HIDDEN)) {
