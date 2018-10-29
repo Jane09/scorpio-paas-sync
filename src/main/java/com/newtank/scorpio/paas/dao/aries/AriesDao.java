@@ -32,4 +32,7 @@ public interface AriesDao {
 
 
     Blacklist findBlacklistByTenantIdAndMobile(@Param("tenantId") Long tenantId, @Param("mobile") String mobile);
+
+
+    void addAdditions(@Param("list") List<AriesCustomAddition> list);
 }

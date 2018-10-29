@@ -5,6 +5,7 @@ import com.newtank.scorpio.paas.dao.aries.AriesDao;
 import com.newtank.scorpio.paas.dao.hxl.HxlDao;
 import com.newtank.scorpio.paas.domain.*;
 import com.newtank.scorpio.paas.utils.DataUtils;
+import com.newtank.scorpio.paas.utils.RemarkConvertor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,6 +120,8 @@ public class SyncService {
                                     }
                                 }else {
                                     log.info("新增用户：{}",mobile);
+
+                                    Map<String,String> remarks = RemarkConvertor.getRemarkMap(customer.getRemark());
                                     //新增客户信息和 线索信息（黑名单）
                                     ariesCustomer = new AriesCustomer();
                                     ariesCustomer.setId(DataUtils.generatePk());
@@ -135,7 +138,14 @@ public class SyncService {
                                     ariesCustomer.setNick_name(customer.getName());
                                     ariesCustomer.setReal_name(customer.getName());
                                     ariesCustomer.setRemark(customer.getRemark());
-                                    ariesCustomer.setSex(checkSex(customer.getSex()));
+                                    if(StringUtils.isEmpty(customer.getSex())) {
+                                        if(remarks.containsKey("sex")) {
+                                            ariesCustomer.setSex(checkSex(remarks.get("sex")));
+                                        }
+                                    }else {
+                                        ariesCustomer.setSex(checkSex(customer.getSex()));
+                                    }
+
                                     ariesCustomer.setSticky(false);
                                     ariesCustomer.setTenant_id(tenantId);
                                     ariesCustomer.setIs_deal_made(false);
@@ -149,8 +159,35 @@ public class SyncService {
                                     checkBlocked(custLead,tenantId,mobile);
                                     custLead.setCustomer_id(ariesCustomer.getId());
                                     custLead.setData_source(customer.getSource());
-//                                    custLead.setProduct_name(customer.getMarket_project());
+                                    if(remarks.containsKey("product")) {
+                                        custLead.setProduct_name(remarks.get("product"));
+                                    }
                                     custLead.setRes_id(customer.getRes_id());
+
+                                    List<AriesCustomAddition> exts = new ArrayList<>();
+                                    if(remarks.containsKey("appoint")) {
+                                        //预约时间
+                                        AriesCustomAddition appoint = new AriesCustomAddition();
+                                        appoint.setInfo_key("appoint_time");
+                                        appoint.setInfo_name("预约时间");
+                                        appoint.setInfo_value(remarks.get("appoint"));
+                                        appoint.setCreate_at(now);
+                                        exts.add(appoint);
+                                    }
+
+                                    if(remarks.containsKey("qa")) {
+                                        //问卷调查
+                                        AriesCustomAddition appoint = new AriesCustomAddition();
+                                        appoint.setInfo_key("psq_info");
+                                        appoint.setInfo_name("问卷信息");
+                                        appoint.setInfo_value(remarks.get("qa"));
+                                        appoint.setCreate_at(now);
+                                        exts.add(appoint);
+                                    }
+                                    if(exts.size() >0){
+                                        //添加扩展信息
+                                        ariesDao.addAdditions(exts);
+                                    }
 
                                     ariesDao.addCustomerLead(custLead);
                                 }
@@ -243,6 +280,11 @@ public class SyncService {
         FEMALE,
         UNKNOWN
     }
+
+
+
+
+
 
     public enum BlacklistType {
         BLACK("黑名单用户"),
