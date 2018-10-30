@@ -186,7 +186,7 @@ public class SyncService {
                                     }
                                     if(exts.size() >0){
                                         //添加扩展信息
-                                        ariesDao.addAdditions(exts);
+//                                        ariesDao.addAdditions(exts);
                                     }
 
                                     ariesDao.addCustomerLead(custLead);

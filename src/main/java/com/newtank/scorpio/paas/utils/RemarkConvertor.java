@@ -1,6 +1,7 @@
 package com.newtank.scorpio.paas.utils;
 
 import com.alibaba.fastjson.JSON;
+import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +36,10 @@ public class RemarkConvertor {
             String[][] rt = new String[len][2];
             int index = 0;
             for(String r: rs) {
+                if(StringUtils.isEmpty(r)) {
+                    index ++;
+                    continue;
+                }
                 if(r.contains(COLON)) {
                     String[] kv = r.split(COLON);
                     rt[index][0] = kv[0];
