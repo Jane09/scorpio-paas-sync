@@ -15,6 +15,9 @@ import org.springframework.util.StringUtils;
 
 import java.util.*;
 
+/**
+ * @author zhoujian
+ */
 @Service
 @Slf4j
 public class SyncService {
@@ -46,7 +49,6 @@ public class SyncService {
         List<HxlTempCustomer> customers = hxlDao.findAllTempCustomers();
         if(customers != null) {
             customers.forEach(customer -> {
-//                log.info("Customer: {}", JSON.toJSONString(customer));
                 boolean skip = false;
                 String resId = customer.getRes_id();
                 String mobile = customer.getMobile();
@@ -74,7 +76,7 @@ public class SyncService {
                         Date now = new Date();
                         if(!StringUtils.isEmpty(mobile) && !mobile.contains(HIDDEN)) {
                             AriesLeadBatch wait = transferBatchNo(batch, waitBatches);
-                            if(wait != null) {//有批次信息
+                            if(wait != null) {
                                 //更新批次信息
                                 AriesLeadBatch old = ariesDao.findBatchById(wait.getId());
                                 if(old == null) {
@@ -111,7 +113,6 @@ public class SyncService {
                                             checkBlocked(custLead,tenantId,mobile);
                                             custLead.setCustomer_id(ariesCustomer.getId());
                                             custLead.setData_source(customer.getSource());
-//                                        custLead.setProduct_name(customer.getMarket_project());
                                             custLead.setRes_id(customer.getRes_id());
                                             ariesDao.addCustomerLead(custLead);
                                         }
